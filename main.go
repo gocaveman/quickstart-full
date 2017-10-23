@@ -8,13 +8,16 @@ import (
 
 	"github.com/gocaveman/caveman/filesystem/fsutil"
 	"github.com/gocaveman/caveman/renderer"
+	"github.com/gocaveman/caveman/renderer/includeregistry"
+	"github.com/gocaveman/caveman/renderer/viewregistry"
 	"github.com/gocaveman/caveman/webutil"
-	"github.com/gocaveman/caveman/webutil/htmlmin"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+
+	_ "github.com/gocaveman/caveman/demo/demotheme"
 )
 
-// Change this to be the name of your project.
+// EDITME: Change this to be the name of your project.
 var PROGRAM_NAME = "quickstart-full"
 
 func main() {
@@ -25,6 +28,7 @@ func main() {
 	pflag.StringP("views-dir", "", "views", "Directory for view template files (pages)")
 	pflag.StringP("includes-dir", "", "includes", "Directory for include template files")
 	pflag.BoolP("optimize", "o", false, "Enable optimizations such as CSS/JS file combining and minification")
+	pflag.BoolP("debug", "g", false, "Enable debug output (intended for development only)")
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 
@@ -34,9 +38,32 @@ func main() {
 		}
 	}
 
+	// TODO: we should put in viper's config search stuff here, as well as the setup for environment
+	// including the prefix and -_ replacement.
+
+	includeSequence := includeregistry.Contents()
+
+	// EDITME: You can modify items from the include registry here before using it.
+
+	// includeSequence...
+
+	// /EDITME
+
+	includeFS := includeregistry.MakeFS(http.Dir(fsutil.MustAbs(viper.GetString("includes-dir"))), includeSequence, viper.GetBool("debug"))
+
+	viewSequence := viewregistry.Contents()
+
+	// EDITME: You can modify items from the view registry here before using it.
+
+	// viewSequence...
+
+	// /EDITME
+
+	viewFS := viewregistry.MakeFS(http.Dir(fsutil.MustAbs(viper.GetString("views-dir"))), viewSequence, viper.GetBool("debug"))
+
 	rend := renderer.New(
-		http.Dir(fsutil.MustAbs(viper.GetString("views-dir"))),
-		http.Dir(fsutil.MustAbs(viper.GetString("includes-dir"))),
+		viewFS,
+		includeFS,
 	)
 
 	var hl webutil.HandlerList
@@ -46,10 +73,17 @@ func main() {
 
 	hl = append(hl, webutil.NewCtxSetHandler("main.optimize", viper.GetBool("optimize")))
 	if viper.GetBool("optimize") {
-		hl = append(hl, htmlmin.NewHandler())
+		// disabling htmlmin handler for now, seems to be quite aggressive and removing things it should not
+		// hl = append(hl, htmlmin.NewHandler())
 	}
 
 	hl = append(hl, webutil.NewRequestContextHandler())
+
+	// EDITME: Custom handlers here, and you can edit the data from the handler registry as needed
+
+	// ...
+
+	// /EDITME
 
 	hl = append(hl, renderer.NewHandler(rend))
 

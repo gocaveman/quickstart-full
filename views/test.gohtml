@@ -1,0 +1,23 @@
+---
+
+---
+{{template "main-page.gohtml" .}}
+{{define "body"}}
+
+<div>
+
+<p>hello1</p>
+
+{{block "test+" .}}{{end}}
+
+</div>
+
+{{end}}
+
+{{define "test+99-example"}}
+<div>something here 1</div>
+{{end}}
+
+{{define "test+20-example"}}
+<div>something here 2</div>
+{{end}}
