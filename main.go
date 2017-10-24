@@ -18,7 +18,7 @@ import (
 )
 
 // EDITME: Change this to be the name of your project.
-var PROGRAM_NAME = "quickstart-full"
+var PROGRAM_NAME = "quickstart-full" // FIXME: should we able to configure this via viper?
 
 func main() {
 
